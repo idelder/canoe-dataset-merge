@@ -77,9 +77,10 @@ def merge(merge_db: str):
     # Abort if there were errors
     if abort:
         print('Aborting.')
+        conn.close()
         return
 
-    print('Checks passed! Beginning merge.')
+    print('All checks passed! \nBeginning merge...')
 
     conn.close()
     conn = init_connection()
@@ -106,6 +107,7 @@ def merge(merge_db: str):
             curs.execute(f'INSERT OR IGNORE INTO {table} SELECT * FROM merge_db.{table}')
     if abort:
         print('Aborting.')
+        conn.close()
         return
     
     # These tables are just for foreign keys in the core dataset... very annoying but necessary
@@ -114,7 +116,7 @@ def merge(merge_db: str):
     curs.execute('INSERT OR IGNORE INTO TechnologyLabel(tech) SELECT tech FROM Technology')
     curs.execute('INSERT OR IGNORE INTO DataSourceLabel(source_id) SELECT source_id FROM DataSource')
     
-    print()
+    print('\nChecking foreign key integrity...')
     curs.execute('PRAGMA FOREIGN_KEYS = 1;')
     try:
         data = conn.execute('PRAGMA FOREIGN_KEY_CHECK;').fetchall()
@@ -130,15 +132,22 @@ def merge(merge_db: str):
         abort = True
     if abort:
         print('Aborting.')
+        conn.close()
         return
+    
+    print('Foreign key integrity checks passed! \nCommitting changes...')
 
     conn.commit()
     conn.close()
 
-    print('\rFinished!')
+    print('Finished!')
 
 
 if __name__ == "__main__":
+
+    cd = input("Set your database directory (or press Enter to use the current directory): ")
+    if cd:
+        os.chdir(cd)
 
     while True:
         db = input('Which database would you like to merge in? (e.g., electricity.sqlite): ')
