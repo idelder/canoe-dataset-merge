@@ -5,7 +5,8 @@ A simple script to merge sqlite modules into the CANOE dataset
 import sqlite3
 import os
 
-schema = 'canoe_dataset_schema.sql'
+this_dir = os.path.dirname(os.path.realpath(__file__))
+schema = os.path.join(this_dir, 'canoe_dataset_schema.sql')
 main_db = 'canoe_dataset.sqlite'
 
 
